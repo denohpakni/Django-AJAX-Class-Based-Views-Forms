@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <h2> Add a Video to a Hall of Fame video Playlist {{ hall.name }}</h2>
+    <form method="POST">
+            {% csrf_token %} 
+            {% load widget_tweaks %}       
+            {% for field in form %}
+    <div class="form-group {% if field.errors %}alert alert-danger{% endif %}">
+        {{ field.errors }}
+        {{ field.label_tag }}
+        {% render_field field class="form-control" %}
+    </div>
+            {% endfor %}
+        
+        <button type="submit" class="btn btn-primary">Add Video</button>
+    </form>
+
+    <h2>OR</h2>
+
+    <form method="POST">
+    {{ search_form }}
+    </form>
+    
+</div>
+
+{% endblock %}
