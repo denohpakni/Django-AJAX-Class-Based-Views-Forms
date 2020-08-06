@@ -1,6 +1,6 @@
 Using [pipenv](https://pypi.org/project/pipenv/) as my virtual environment manager
 
-__Disadvantages:__
+___Disadvantages:___
 * takes too long to process
 * doesnt remember to code input history
 * doesnt install other dependencies, just the specific package

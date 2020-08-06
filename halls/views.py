@@ -3,14 +3,14 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.forms.utils import ErrorList
 from halls.models import Hall, Video
 from halls.forms import VideoForm, SearchForm
 import urllib, requests
  
 
-YOUTUBE_API_KEY = 'AIzaSyAw8YSt9Ch4OllDdJpYsjDaWxp-fsqSZa0'
+YOUTUBE_API_KEY = 'AIzaSyDgE_S8q_HG_Y747L9COW0JmNq3wVuQxXc'
 
 # Create your views here.
 
@@ -18,7 +18,8 @@ def home(request):
     return render(request, 'home.html')
 
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    halls = Hall.objects.filter(user=request.user)
+    return render(request, 'dashboard.html',{'halls':halls})
 
 def add_video(request, pk):
     form = VideoForm()
@@ -29,7 +30,7 @@ def add_video(request, pk):
         raise Http404
 
     if request.method == 'POST':
-        # Create
+        # Create video for specific Hall
         form = VideoForm(request.POST)
         if form.is_valid():
             video = Video()
@@ -51,6 +52,14 @@ def add_video(request, pk):
 
     return render(request, 'add_video.html',{'form':form, 'search_form':search_form,'hall':hall})
 
+def video_search(request):
+    search_form = SearchForm(request.GET)
+    if search_form.is_valid():
+        encoded_search_term = urllib.parse.quote(search_form.cleaned_data['search_term'])
+        response = request.GET(f'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q={ encoded_search_term }&key={ YOUTUBE_API_KEY }')    
+        return JsonResponse(response.json())
+    return JsonResponse({'error':'Not able to validate form'})
+
 class SignUp(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('home')
@@ -63,16 +72,6 @@ class SignUp(generic.CreateView):
         user = authenticate(username=username, password=password)
         login(self.request, user)
         return view
-
-# def create_hall(request):
-#     if request.method == 'POST':
-#         get form date
-#         validate form data
-#         create hall
-#         save hall
-#     else:
-#         Create a form for hall
-#         return the template
 
 # Class based views are good for CRUD while function based views are for more complex and/or custom views.
 class CreateHall(generic.CreateView):
